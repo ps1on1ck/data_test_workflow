@@ -1,0 +1,24 @@
+name: Check Commits
+
+on:
+  pull_request:
+    branches:
+      - staging
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Check commits
+        run: |
+          # Your script or command to check if all commits from feature branch are in develop
+          # Example: git fetch origin develop && git diff --name-only origin/develop...$GITHUB_HEAD_REF
+          # If the output is not empty, fail the workflow
+          if [[ -n "$(git diff --name-only origin/develop...$GITHUB_HEAD_REF)" ]]; then
+            echo "Not all commits from the feature branch are in develop."
+            exit 1
+          fi
