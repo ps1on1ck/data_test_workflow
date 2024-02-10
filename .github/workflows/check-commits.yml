@@ -16,15 +16,12 @@ jobs:
       - name: Fetch develop branch
         run: git fetch origin develop
 
-      - name: Find merge base
-        id: merge-base
-        run: echo "::set-output name=base::$(git merge-base HEAD origin/develop)"
-
       - name: Check commits
         run: |
           # Check if all commits from feature branch are in develop
-          if [[ -n "$(git diff --name-only ${{ steps.merge-base.outputs.base }} HEAD)" ]]; then
+          if git log --oneline origin/develop..HEAD; then
+            echo "All commits from the feature branch are in develop."
+          else
             echo "Not all commits from the feature branch are in develop."
             exit 1
           fi
-
