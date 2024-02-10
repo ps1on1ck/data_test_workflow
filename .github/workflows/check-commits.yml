@@ -19,7 +19,8 @@ jobs:
       - name: Check commits
         run: |
           # Check if all commits from feature branch are in develop
-          if git log --oneline origin/develop..HEAD; then
+          git fetch origin ${{ github.head_ref }}
+          if git merge-base --is-ancestor origin/develop origin/${{ github.head_ref }}; then
             echo "All commits from the feature branch are in develop."
           else
             echo "Not all commits from the feature branch are in develop."
