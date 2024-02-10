@@ -8,17 +8,18 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Fetch develop branch
+        run: git fetch origin develop
+
       - name: Check commits
         run: |
-          # Your script or command to check if all commits from feature branch are in develop
-          # Example: git fetch origin develop && git diff --name-only origin/develop...$GITHUB_HEAD_REF
-          # If the output is not empty, fail the workflow
-          if [[ -n "$(git diff --name-only origin/develop...$GITHUB_HEAD_REF)" ]]; then
+          # Check if all commits from feature branch are in develop
+          if [[ -n "$(git diff --name-only origin/develop...HEAD)" ]]; then
             echo "Not all commits from the feature branch are in develop."
             exit 1
           fi

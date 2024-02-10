@@ -130,3 +130,5 @@ dist
 .pnp.*
 /.idea/*.gitignore
 /.idea/jsLinters/*.xml
+/.idea/*.iml
+/.idea/*.xml
