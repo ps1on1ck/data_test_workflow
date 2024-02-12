@@ -1,0 +1,28 @@
+name: Check Commits
+
+on:
+  pull_request:
+    branches:
+      - staging
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Fetch develop branch
+        run: git fetch origin develop
+
+      - name: Check commits
+        run: |
+          # Check if all commits from feature branch are in develop
+          git fetch origin ${{ github.head_ref }}
+          if git merge-base --is-ancestor origin/develop origin/${{ github.head_ref }}; then
+            echo "All commits from the feature branch are in develop."
+          else
+            echo "Not all commits from the feature branch are in develop."
+            exit 1
+          fi
