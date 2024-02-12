@@ -20,7 +20,7 @@ jobs:
         run: |
           # Check if all commits from feature branch are in develop
           git fetch origin ${{ github.head_ref }}
-          if git merge-base --is-ancestor origin/develop origin/${{ github.head_ref }}; then
+          if [ -z "$(git cherry -v origin/develop HEAD)" ]; then
             echo "All commits from the feature branch are in develop."
           else
             echo "Not all commits from the feature branch are in develop."
