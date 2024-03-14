@@ -19,6 +19,14 @@ jobs:
 #      (${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && contains(github.event.commits.*.message, 'Merge branch') && contains(github.event.commits.*.message, 'feature-branch-name') }}
 
     steps:
+      - name: Get Workflow ID
+        id: get_workflow_id
+        run: |
+          workflow_id=$(curl -s -H "Authorization: Bearer ${{ secrets.MY_NEW_GITHUB_TOKEN }}" "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows" | jq -r '.workflows[] | select(.name == "Check Commits") | .id')
+          console.log('          workflow_id,          workflow_id);
+          echo "::set-output name=workflow_id::$workflow_id"
+          
+
       - name: Extract Feature Branch Name
         id: extract_branch
         run: |
@@ -29,13 +37,6 @@ jobs:
             feature_branch=$(echo "$commit_message" | grep -oP 'Merge branch '\''\K([^'\'']+)')
             console.log('            feature_branch',            feature_branch) 
             echo "::set-output name=feature_branch::$feature_branch"
-
-      - name: Get Workflow ID
-        id: get_workflow_id
-        run: |
-          workflow_id=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows" | jq -r '.workflows[] | select(.name == "All commits are in develop branch") | .id')
-          console.log('          workflow_id,          workflow_id);
-          echo "::set-output name=workflow_id::$workflow_id"
 
       - name: Trigger Workflow1 for Feature Branch
         if: ${{ steps.extract_branch.outputs.feature_branch != '' }}
