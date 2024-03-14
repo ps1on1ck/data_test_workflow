@@ -10,9 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2  # This action ensures that the repository is cloned properly
-
       - name: Get Workflow ID
         id: get_workflow_id
         run: |
@@ -20,28 +17,15 @@ jobs:
           repo_name=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f2)
 
           workflow_id=$(curl -s -H "Authorization: Bearer ${{ secrets.MY_NEW_GITHUB_TOKEN }}" "https://api.github.com/repos/${repo_owner}/${repo_name}/actions/workflows" | jq -r '.workflows[] | select(.name == "Check Commits") | .id')
-          console.log('          workflow_id,           workflow_id);
           echo "::set-output name=workflow_id::$workflow_id"
 
-      - name: Extract Feature Branch Name
-        id: extract_branch
-        run: |
-          # Get the latest commit message from the push event
-          commit_message=$(git show --format=%B -s $GITHUB_SHA)
-
-          # Extract the feature branch name from the commit message
-          feature_branch=$(echo "$commit_message" | grep -oP "Merge branch '(.+)' into develop" | sed "s/Merge branch '//" | sed "s/' into develop//")
-          console.log('feature_branch, feature_branch);
-          echo "::set-output name=feature_branch::$feature_branch"
-
       - name: Rerun Workflow1 for Feature Branch
-        if: ${{ steps.extract_branch.outputs.feature_branch != '' }}
+        if: ${{ contains(github.event.head_commit.message, 'Merge branch') }}
         uses: actions/github-script@v4
         with:
           github-token: ${{ secrets.MY_NEW_GITHUB_TOKEN }}
           script: |
             const { owner, repo } = context.repo;
-            const branch = context.payload.workflow_run.head_branch;
             const response = await octokit.actions.listWorkflowRuns({
               owner,
               repo,
