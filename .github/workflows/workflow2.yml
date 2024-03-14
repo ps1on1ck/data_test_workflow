@@ -34,7 +34,7 @@ jobs:
               });
               const workflows = response.data.workflows;
               console.log('workflows', workflows);
-              const workflow = workflows.find(w => w.name === 'check-commits.yml');
+              const workflow = workflows.find(w => w.name === 'Check Commits');
               console.log('workflow', workflow);
               if (workflow) {
                 await github.actions.reRunWorkflow({
@@ -46,7 +46,7 @@ jobs:
                 });
                 console.log(`Workflow check-commits.yml rerun triggered for branch ${branchName}`);
               } else {
-                throw new Error('Workflow check-commits not found.');
+                throw new Error('Workflow Check Commits not found.');
               }
             } catch (error) {
               console.error('Error:', error.message);
