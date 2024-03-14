@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+
       - name: Extract Branch Name
         uses: actions/checkout@v2
 
@@ -25,11 +28,12 @@ jobs:
           script: |
             try {
               const branchName = '${{ steps.extract_branch.outputs.branch_name }}';
-              const { data } = await github.actions.listRepoWorkflows({
+              const response = await github.request('GET /repos/:owner/:repo/actions/workflows', {
                 owner: context.repo.owner,
                 repo: context.repo.repo
               });
-              const workflow = data.workflows.find(w => w.name === 'check-commits.yml');
+              const workflows = response.data.workflows;
+              const workflow = workflows.find(w => w.name === 'check-commits.yml');
               if (workflow) {
                 await github.actions.reRunWorkflow({
                   owner: context.repo.owner,
@@ -38,9 +42,9 @@ jobs:
                   workflow_id: workflow.id,
                   ref: `refs/heads/${branchName}`
                 });
-                console.log(`Workflow check-commits.yml rerun triggered for branch ${branchName}`);
+                console.log(`Workflow workflow1.yml rerun triggered for branch ${branchName}`);
               } else {
-                throw new Error('Workflow check-commits.yml not found.');
+                throw new Error('Workflow workflow1.yml not found.');
               }
             } catch (error) {
               console.error('Error:', error.message);
