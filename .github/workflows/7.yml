@@ -20,7 +20,7 @@ jobs:
           echo "::set-output name=workflow_id::$workflow_id"
 
       - name: Rerun Workflow1 for Feature Branch
-        if: ${{ contains(github.event.head_commit.message, 'Merge branch') }}
+#        if: ${{ contains(github.event.head_commit.message, 'Merge branch') }}
         uses: actions/github-script@v4
         with:
           github-token: ${{ secrets.MY_NEW_GITHUB_TOKEN }}
