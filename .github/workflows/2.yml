@@ -1,0 +1,40 @@
+name: Workflow 4
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  rerun-workflow1:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract Branch Name
+        uses: actions/checkout@v2
+
+      - name: Get Branch Name
+        id: extract_branch
+        run: echo ::set-output name=branch_name::$(git rev-parse --abbrev-ref HEAD)
+
+      - name: Rerun Workflow 1
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.MY_NEW_GITHUB_TOKEN }}
+          script: |
+            const branchName = '${{ steps.extract_branch.outputs.branch_name }}';
+            const { data: { workflows } } = await github.actions.listRepoWorkflows();
+            const workflowName = 'check-commits.yml'; // Adjust the workflow file name if necessary
+            const workflow = workflows.find(w => w.path === `.github/workflows/${workflowName}`);
+            if (workflow) {
+              await github.actions.reRunWorkflow({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: workflow.latest_run.id,
+                workflow_id: workflow.id,
+                ref: `refs/heads/${branchName}`
+              });
+              console.log(`Workflow ${workflowName} rerun triggered for branch ${branchName}`);
+            } else {
+              console.log(`Workflow ${workflowName} not found.`);
+            }
