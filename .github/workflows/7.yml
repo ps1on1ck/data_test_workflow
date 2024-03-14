@@ -28,7 +28,7 @@ jobs:
           echo "::set-output name=feature_branch::$feature_branch"
 
       - name: Rerun Workflow1 for Feature Branch
-        if: ${{ steps.extract_branch.outputs.feature_branch != '' }}
+#        if: ${{ steps.extract_branch.outputs.feature_branch != '' }}
         uses: actions/github-script@v4
         with:
           github-token: ${{ secrets.MY_NEW_GITHUB_TOKEN }}
