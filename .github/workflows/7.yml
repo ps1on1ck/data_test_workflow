@@ -1,0 +1,62 @@
+name: Rerun Workflow1 on Develop Commit
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_run:
+    workflows: ["All commits are in develop branch"]
+    types:
+      - completed
+
+jobs:
+  rerun:
+    runs-on: ubuntu-latest
+
+#    if: |
+#      ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.name == 'Check Commits' }}
+#      ||
+#      (${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && contains(github.event.commits.*.message, 'Merge branch') && contains(github.event.commits.*.message, 'feature-branch-name') }}
+
+    steps:
+      - name: Extract Feature Branch Name
+        id: extract_branch
+        run: |
+            # Get the latest commit message from the push event
+            commit_message=$(git log -1 --pretty=format:"%s")
+            
+            # Extract the feature branch name from the commit message
+            feature_branch=$(echo "$commit_message" | grep -oP 'Merge branch '\''\K([^'\'']+)')
+            console.log('            feature_branch',            feature_branch) 
+            echo "::set-output name=feature_branch::$feature_branch"
+
+      - name: Get Workflow ID
+        id: get_workflow_id
+        run: |
+          workflow_id=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows" | jq -r '.workflows[] | select(.name == "All commits are in develop branch") | .id')
+          console.log('          workflow_id,          workflow_id);
+          echo "::set-output name=workflow_id::$workflow_id"
+
+      - name: Trigger Workflow1 for Feature Branch
+        if: ${{ steps.extract_branch.outputs.feature_branch != '' }}
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.MY_NEW_GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const branch = context.payload.workflow_run.head_branch;
+            console.log('branch', branch);
+            const response = await octokit.actions.listWorkflowRuns({
+              owner,
+              repo,
+              workflow_id: ${{ steps.get_workflow_id.outputs.workflow_id }}
+            });
+            const lastFailedRun = response.data.workflow_runs.find(run => run.conclusion === 'failure');
+            if (lastFailedRun) {
+              await octokit.actions.reRunWorkflow({
+                owner,
+                repo,
+                run_id: lastFailedRun.id,
+                workflow_id: ${{ steps.get_workflow_id.outputs.workflow_id }}
+              });
+            }
