@@ -4,41 +4,33 @@ on:
   push:
     branches:
       - develop
-  workflow_run:
-    workflows: ["All commits are in develop branch"]
-    types:
-      - completed
 
 jobs:
   rerun:
     runs-on: ubuntu-latest
 
-#    if: |
-#      ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.name == 'Check Commits' }}
-#      ||
-#      (${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && contains(github.event.commits.*.message, 'Merge branch') && contains(github.event.commits.*.message, 'feature-branch-name') }}
-
     steps:
       - name: Get Workflow ID
         id: get_workflow_id
         run: |
-          workflow_id=$(curl -s -H "Authorization: Bearer ${{ secrets.MY_NEW_GITHUB_TOKEN }}" "https://api.github.com/repos/${github.repository}/actions/workflows" | jq -r '.workflows[] | select(.name == "Check Commits") | .id')
-          console.log('          workflow_id,          workflow_id);
+          repo_owner=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f1)
+          repo_name=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f2)
+
+          workflow_id=$(curl -s -H "Authorization: Bearer ${{ secrets.MY_NEW_GITHUB_TOKEN }}" "https://api.github.com/repos/${repo_owner}/${repo_name}/actions/workflows" | jq -r '.workflows[] | select(.name == "Check Commits") | .id')
           echo "::set-output name=workflow_id::$workflow_id"
-          
 
       - name: Extract Feature Branch Name
         id: extract_branch
         run: |
-            # Get the latest commit message from the push event
-            commit_message=$(git log -1 --pretty=format:"%s")
-            
-            # Extract the feature branch name from the commit message
-            feature_branch=$(echo "$commit_message" | grep -oP "Merge branch '(.+)' into develop" | sed "s/Merge branch '//" | sed "s/' into develop//")
-            
-            echo "::set-output name=feature_branch::$feature_branch"
+          # Get the latest commit message from the push event
+          commit_message=$(git log -1 --pretty=format:"%s")
 
-      - name: Trigger Workflow1 for Feature Branch
+          # Extract the feature branch name from the commit message
+          feature_branch=$(echo "$commit_message" | grep -oP "Merge branch '(.+)' into develop" | sed "s/Merge branch '//" | sed "s/' into develop//")
+
+          echo "::set-output name=feature_branch::$feature_branch"
+
+      - name: Rerun Workflow1 for Feature Branch
         if: ${{ steps.extract_branch.outputs.feature_branch != '' }}
         uses: actions/github-script@v4
         with:
@@ -46,7 +38,6 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const branch = context.payload.workflow_run.head_branch;
-            console.log('branch', branch);
             const response = await octokit.actions.listWorkflowRuns({
               owner,
               repo,
