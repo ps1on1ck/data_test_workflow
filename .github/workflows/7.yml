@@ -28,7 +28,7 @@ jobs:
           echo "::set-output name=feature_branch::$feature_branch"
 
       - name: Rerun Workflow1 for Feature Branch
-#        if: ${{ steps.extract_branch.outputs.feature_branch != '' }}
+        if: ${{ steps.extract_branch.outputs.feature_branch != '' }}
         uses: actions/github-script@v4
         with:
           github-token: ${{ secrets.MY_NEW_GITHUB_TOKEN }}
@@ -36,23 +36,25 @@ jobs:
             const { owner, repo, sha } = context;
             const workflow_id = "${{ steps.get_workflow_id.outputs.workflow_id }}";
             const feature_branch = "${{ steps.extract_branch.outputs.feature_branch }}";
-            console.log('feature_branch', feature_branch);
             
-            const octokit = context.octokit;
-            console.log('octokit', octokit);
-            const response = await octokit.rest.actions.listWorkflowRuns({
-              owner,
-              repo,
-              workflow_id,
-              branch: 'develop',
-              status: 'completed'
-            });
-            const lastFailedRun = response.data.workflow_runs.find(run => run.conclusion === 'failure');
-            if (lastFailedRun) {
-              await octokit.rest.actions.reRunWorkflow({
+            try {
+              const octokit = new Octokit({ auth: process.env.MY_NEW_GITHUB_TOKEN });
+              const response = await octokit.rest.actions.listWorkflowRuns({
                 owner,
                 repo,
-                run_id: lastFailedRun.id,
-                workflow_id
+                workflow_id,
+                branch: 'develop',
+                status: 'completed'
               });
+              const lastFailedRun = response.data.workflow_runs.find(run => run.conclusion === 'failure');
+              if (lastFailedRun) {
+                await octokit.rest.actions.reRunWorkflow({
+                  owner,
+                  repo,
+                  run_id: lastFailedRun.id,
+                  workflow_id
+                });
+              }
+            } catch (error) {
+              console.error(error);
             }
