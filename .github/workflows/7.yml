@@ -23,7 +23,7 @@ jobs:
         id: extract_branch
         run: |
           # Extract the feature branch name from the commit message
-          feature_branch=$(echo "${{ github.event.head_commit.message }}" | grep -oP "Merge branch '(.+)' into" | sed "s/Merge branch '//" | sed "s/' into//")
+          feature_branch=$(echo "${{ github.event.head_commit.message }}" | grep -oP "Merge branch (\S+)" | sed "s/Merge branch //")
           
           echo "::set-output name=feature_branch::$feature_branch"
 
