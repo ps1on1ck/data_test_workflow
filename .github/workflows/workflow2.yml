@@ -4,13 +4,14 @@ on:
   push:
     branches:
       - develop
+#  workflow_dispatch: # Add this trigger to allow manual workflow runs
 
 jobs:
   rerun-workflow1:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Extract Branch Name
         uses: actions/checkout@v2
 
       - name: Get Branch Name
@@ -20,7 +21,7 @@ jobs:
       - name: Rerun Workflow 1
         uses: actions/github-script@v5
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.MY_GITHUB_TOKEN }}
           script: |
             const branchName = '${{ steps.extract_branch.outputs.branch_name }}';
             const { data: { workflows } } = await github.actions.listRepoWorkflows();
