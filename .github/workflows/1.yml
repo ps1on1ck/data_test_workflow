@@ -1,60 +1,60 @@
-name: Workflow 2
-
-on:
-  push:
-    branches:
-      - develop
-  workflow_dispatch: # Add this trigger to allow manual workflow runs
-
-jobs:
-  rerun-workflow1:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18.17.1' # You can specify the Node.js version you need
-
-      - name: Install Dependencies with Yarn
-        run: yarn install --frozen-lockfile
-
-      - name: Extract Branch Name
-        uses: actions/checkout@v2
-
-      - name: Get Branch Name
-        id: extract_branch
-        run: echo ::set-output name=branch_name::$(git rev-parse --abbrev-ref HEAD)
-
-      - name: Rerun Workflow 1
-        run: |
-          node -e "
-            const github = require('@actions/github');
-            const core = require('@actions/core');
-          
-            (async () => {
-              try {
-                const branchName = '${{ steps.extract_branch.outputs.branch_name }}';
-                const response = await github.request('GET /repos/:owner/:repo/actions/workflows', {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo
-                });
-                const workflows = response.data.workflows;
-                const workflow = workflows.find(w => w.name === 'Check Commits');
-                console.log('github.actions', github.actions);
-                if (workflow) {
-                  const { data } = await github.actions.reRunWorkflow({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    run_id: workflow.latest_run.id
-                  });
-                  console.log('Workflow workflow1.yml rerun triggered for branch ' + branchName);
-                } else {
-                  throw new Error('Workflow workflow1.yml not found.');
-                }
-              } catch (error) {
-                console.error('Error:', error.message);
-                process.exit(1); // Exit with non-zero status code to mark workflow as failed
-              }
-            })();
-          "
+#name: Workflow 2
+#
+#on:
+#  push:
+#    branches:
+#      - develop
+#  workflow_dispatch: # Add this trigger to allow manual workflow runs
+#
+#jobs:
+#  rerun-workflow1:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Setup Node.js
+#        uses: actions/setup-node@v2
+#        with:
+#          node-version: '18.17.1' # You can specify the Node.js version you need
+#
+#      - name: Install Dependencies with Yarn
+#        run: yarn install --frozen-lockfile
+#
+#      - name: Extract Branch Name
+#        uses: actions/checkout@v2
+#
+#      - name: Get Branch Name
+#        id: extract_branch
+#        run: echo ::set-output name=branch_name::$(git rev-parse --abbrev-ref HEAD)
+#
+#      - name: Rerun Workflow 1
+#        run: |
+#          node -e "
+#            const github = require('@actions/github');
+#            const core = require('@actions/core');
+#
+#            (async () => {
+#              try {
+#                const branchName = '${{ steps.extract_branch.outputs.branch_name }}';
+#                const response = await github.request('GET /repos/:owner/:repo/actions/workflows', {
+#                  owner: context.repo.owner,
+#                  repo: context.repo.repo
+#                });
+#                const workflows = response.data.workflows;
+#                const workflow = workflows.find(w => w.name === 'Check Commits');
+#                console.log('github.actions', github.actions);
+#                if (workflow) {
+#                  const { data } = await github.actions.reRunWorkflow({
+#                    owner: context.repo.owner,
+#                    repo: context.repo.repo,
+#                    run_id: workflow.latest_run.id
+#                  });
+#                  console.log('Workflow workflow1.yml rerun triggered for branch ' + branchName);
+#                } else {
+#                  throw new Error('Workflow workflow1.yml not found.');
+#                }
+#              } catch (error) {
+#                console.error('Error:', error.message);
+#                process.exit(1); // Exit with non-zero status code to mark workflow as failed
+#              }
+#            })();
+#          "

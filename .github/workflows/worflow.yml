@@ -40,6 +40,7 @@ jobs:
               const workflowName = 'check-commits.yml'; // Adjust the workflow file name if necessary
               const workflow = workflows.find(w => w.path === `.github/workflows/${workflowName}`);
               if (workflow) {
+                console.log('workflow', workflow);
                 if (workflow.latest_run) {
                   await github.rest.actions.reRunWorkflow({
                     owner: '${{ github.repository_owner }}',
