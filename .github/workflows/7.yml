@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2  # This action ensures that the repository is cloned properly
+
       - name: Get Workflow ID
         id: get_workflow_id
         run: |
