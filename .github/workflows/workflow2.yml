@@ -25,12 +25,11 @@ jobs:
           script: |
             try {
               const branchName = '${{ steps.extract_branch.outputs.branch_name }}';
-              const { data: { workflows } } = await github.actions.listRepoWorkflows({
+              const { data } = await github.actions.listRepoWorkflows({
                 owner: context.repo.owner,
                 repo: context.repo.repo
               });
-              const workflowName = 'check-commits.yml'; // Adjust the workflow file name if necessary
-              const workflow = workflows.find(w => w.path === '.github/workflows/' + workflowName);
+              const workflow = data.workflows.find(w => w.name === 'check-commits.yml');
               if (workflow) {
                 await github.actions.reRunWorkflow({
                   owner: context.repo.owner,
@@ -39,9 +38,9 @@ jobs:
                   workflow_id: workflow.id,
                   ref: `refs/heads/${branchName}`
                 });
-                console.log(`Workflow ${workflowName} rerun triggered for branch ${branchName}`);
+                console.log(`Workflow check-commits.yml rerun triggered for branch ${branchName}`);
               } else {
-                throw new Error(`Workflow ${workflowName} not found.`);
+                throw new Error('Workflow check-commits.yml not found.');
               }
             } catch (error) {
               console.error('Error:', error.message);
