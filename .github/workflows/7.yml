@@ -31,7 +31,7 @@ jobs:
 
           # Extract the feature branch name from the commit message
           feature_branch=$(echo "$commit_message" | grep -oP "Merge branch '(.+)' into develop" | sed "s/Merge branch '//" | sed "s/' into develop//")
-          console.log('                    feature_branch,                     feature_branch);
+          console.log('feature_branch, feature_branch);
           echo "::set-output name=feature_branch::$feature_branch"
 
       - name: Rerun Workflow1 for Feature Branch
