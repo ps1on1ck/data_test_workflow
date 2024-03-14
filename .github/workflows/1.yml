@@ -11,7 +11,7 @@ jobs:
       - name: Test GitHub Token
         uses: actions/github-script@v5
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.MY_NEW_GITHUB_TOKEN }}
           script: |
             const result = await github.request('GET /repos/:owner/:repo', {
               owner: context.repo.owner,
