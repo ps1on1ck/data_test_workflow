@@ -23,8 +23,8 @@ jobs:
         id: extract_branch
         run: |
           # Extract the feature branch name from the commit message
-          feature_branch=$(echo "${{ github.event.head_commit.message }}" | grep -oP "Merge branch '(.+)' into develop" | sed "s/Merge branch '//" | sed "s/' into develop//");
-          console.log(feature_branch);
+          feature_branch=$(echo "${{ github.event.head_commit.message }}" | grep -oP "Merge branch '(.+)' into develop" | sed "s/Merge branch '//" | sed "s/' into develop//")
+          
           echo "::set-output name=feature_branch::$feature_branch"
 
       - name: Rerun Workflow1 for Feature Branch
@@ -35,6 +35,8 @@ jobs:
           script: |
             const { owner, repo, sha } = context;
             const workflow_id = "${{ steps.get_workflow_id.outputs.workflow_id }}";
+            const feature_branch = "${{ steps.extract_branch.outputs.feature_branch }}";
+            console.log('feature_branch', feature_branch);
             
             const octokit = context.octokit;
             const response = await octokit.rest.actions.listWorkflowRuns({
