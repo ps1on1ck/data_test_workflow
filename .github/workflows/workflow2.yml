@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - develop
-#  workflow_dispatch: # Add this trigger to allow manual workflow runs
+  workflow_dispatch: # Add this trigger to allow manual workflow runs
 
 jobs:
   rerun-workflow1:
