@@ -23,7 +23,7 @@ jobs:
         id: extract_branch
         run: |
           # Extract the feature branch name from the commit message
-          feature_branch=$(echo "${{ github.event.head_commit.message }}" | grep -oP "Merge branch '(.+)' into develop" | sed "s/Merge branch '//" | sed "s/' into develop//")
+          feature_branch=$(echo "${{ github.event.head_commit.message }}" | grep -oP "Merge branch '(.+)' into" | sed "s/Merge branch '//" | sed "s/' into//")
           
           echo "::set-output name=feature_branch::$feature_branch"
 
@@ -39,6 +39,7 @@ jobs:
             console.log('feature_branch', feature_branch);
             
             const octokit = context.octokit;
+            console.log('octokit', octokit);
             const response = await octokit.rest.actions.listWorkflowRuns({
               owner,
               repo,
