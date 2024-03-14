@@ -26,6 +26,7 @@ jobs:
           github-token: ${{ secrets.MY_NEW_GITHUB_TOKEN }}
           script: |
             const { owner, repo } = context.repo;
+            const octokit = github.getOctokit(process.env.MY_NEW_GITHUB_TOKEN); // Import octokit object
             const response = await octokit.actions.listWorkflowRuns({
               owner,
               repo,
