@@ -26,6 +26,8 @@ jobs:
             console.log('branchName', branchName);
 
             async function run() {
+              console.log('github', github);
+              console.log('github.actions', github.actions);
               const { data: { workflows } } = await github.actions.listRepoWorkflows();
               const workflowName = 'check-commits.yml'; // Adjust the workflow file name if necessary
               const workflow = workflows.find(w => w.path === `.github/workflows/${workflowName}`);
