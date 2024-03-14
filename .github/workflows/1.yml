@@ -14,8 +14,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Install Dependencies with Yarn
+        run: yarn install --frozen-lockfile
 
       - name: Extract Branch Name
         uses: actions/checkout@v2
