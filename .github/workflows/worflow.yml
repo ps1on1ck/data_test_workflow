@@ -1,4 +1,4 @@
-name: Check Commits 2
+name: Workflow 5
 
 on:
   push:
@@ -6,24 +6,55 @@ on:
       - develop
 
 jobs:
-  check:
+  rerun-workflow1:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Extract Branch Name
         uses: actions/checkout@v2
 
-      - name: Fetch develop branch
-        run: git fetch origin develop
+      - name: Get Branch Name
+        id: extract_branch
+        run: echo ::set-output name=branch_name::$(git rev-parse --abbrev-ref HEAD)
 
-      - name: Check commits
+      - name: Debug Logging
         run: |
-          # Check if all commits from feature branch are in develop
-          git fetch origin ${{ github.head_ref }}
-          commits_not_in_develop=$(git rev-list --count origin/${{ github.head_ref }} ^origin/develop)
-          if [ $commits_not_in_develop -eq 0 ]; then
-            echo "All commits from the feature branch are in develop."
-          else
-            echo "Not all commits from the feature branch are in develop."
-            exit 1
-          fi
+          echo "Owner: ${{ github.repository_owner }}"
+          echo "Repo: ${{ github.event.repository.name }}"
+          echo "Branch: ${{ steps.extract_branch.outputs.branch_name }}"
+
+      - name: Rerun Workflow 1
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.MY_NEW_GITHUB_TOKEN }}
+          script: |
+            const branchName = '${{ steps.extract_branch.outputs.branch_name }}';
+            console.log('branchName', branchName);
+
+            async function run() {
+              const { data: { workflows } } = await github.rest.actions.listRepoWorkflows({
+                owner: '${{ github.repository_owner }}',
+                repo: '${{ github.event.repository.name }}'
+              });
+              console.log('workflows', workflows);
+              const workflowName = 'check-commits.yml'; // Adjust the workflow file name if necessary
+              const workflow = workflows.find(w => w.path === `.github/workflows/${workflowName}`);
+              if (workflow) {
+                if (workflow.latest_run) {
+                  await github.rest.actions.reRunWorkflow({
+                    owner: '${{ github.repository_owner }}',
+                    repo: '${{ github.event.repository.name }}',
+                    run_id: workflow.latest_run.id,
+                    workflow_id: workflow.id,
+                    ref: `refs/heads/${branchName}`
+                  });
+                  console.log(`Workflow ${workflowName} rerun triggered for branch ${branchName}`);
+                } else {
+                  console.log(`No previous runs found for workflow ${workflowName}`);
+                }
+              } else {
+                console.log(`Workflow ${workflowName} not found.`);
+              }
+            }
+
+            run();
