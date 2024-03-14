@@ -20,6 +20,7 @@ jobs:
           repo_name=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f2)
 
           workflow_id=$(curl -s -H "Authorization: Bearer ${{ secrets.MY_NEW_GITHUB_TOKEN }}" "https://api.github.com/repos/${repo_owner}/${repo_name}/actions/workflows" | jq -r '.workflows[] | select(.name == "Check Commits") | .id')
+          console.log('          workflow_id,           workflow_id);
           echo "::set-output name=workflow_id::$workflow_id"
 
       - name: Extract Feature Branch Name
@@ -30,7 +31,7 @@ jobs:
 
           # Extract the feature branch name from the commit message
           feature_branch=$(echo "$commit_message" | grep -oP "Merge branch '(.+)' into develop" | sed "s/Merge branch '//" | sed "s/' into develop//")
-
+          console.log('                    feature_branch,                     feature_branch);
           echo "::set-output name=feature_branch::$feature_branch"
 
       - name: Rerun Workflow1 for Feature Branch
