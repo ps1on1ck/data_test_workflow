@@ -26,21 +26,19 @@ jobs:
         with:
           github-token: ${{ secrets.MY_NEW_GITHUB_TOKEN }}
           script: |
-            const github = require('@actions/github');
             const core = require('@actions/core');
             
             try {
               const branchName = '${{ steps.extract_branch.outputs.branch_name }}';
-              const octokit = github.getOctokit(core.getInput('token'));
-              const response = await octokit.request('GET /repos/:owner/:repo/actions/workflows', {
+              const response = await github.request('GET /repos/:owner/:repo/actions/workflows', {
                 owner: context.repo.owner,
                 repo: context.repo.repo
               });
               const workflows = response.data.workflows;
               const workflow = workflows.find(w => w.name === 'Check Commits');
+              console.log('github.actions', github.actions);
               if (workflow) {
-                console.log('octokit', octokit);
-                const { data } = await octokit.actions.reRunWorkflow({
+                const { data } = await github.actions.reRunWorkflow({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   run_id: workflow.latest_run.id
