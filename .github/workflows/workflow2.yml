@@ -34,7 +34,7 @@ jobs:
               });
               const workflows = response.data.workflows;
               const workflow = workflows.find(w => w.name === 'Check Commits');
-              console.log('workflow', workflow);
+              console.log('github.actions', github.actions);
               if (workflow) {
                 await github.actions.reRunWorkflow({
                   owner: context.repo.owner,
