@@ -22,11 +22,8 @@ jobs:
       - name: Extract Feature Branch Name
         id: extract_branch
         run: |
-          # Get the latest commit message from the push event
-          commit_message=$(git log -1 --pretty=format:"%s")
-
           # Extract the feature branch name from the commit message
-          feature_branch=$(echo "$commit_message" | grep -oP "Merge branch '(.+)' into develop" | sed "s/Merge branch '//" | sed "s/' into develop//")
+          feature_branch=$(echo "${{ github.event.head_commit.message }}" | grep -oP "Merge branch '(.+)' into develop" | sed "s/Merge branch '//" | sed "s/' into develop//")
 
           echo "::set-output name=feature_branch::$feature_branch"
 
