@@ -1,6 +1,9 @@
 name: Test GitHub Token
 
 on:
+  push:
+    branches:
+      - develop
   workflow_dispatch:
 
 jobs:
