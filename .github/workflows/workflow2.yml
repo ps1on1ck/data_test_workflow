@@ -24,9 +24,12 @@ jobs:
           github-token: ${{ secrets.MY_GITHUB_TOKEN }}
           script: |
             const branchName = '${{ steps.extract_branch.outputs.branch_name }}';
-            const { data: { workflows } } = await github.actions.listRepoWorkflows();
+            const { data: { workflows } } = await github.actions.listRepoWorkflows({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
             const workflowName = 'check-commits.yml'; // Adjust the workflow file name if necessary
-            const workflow = workflows.find(w => w.path === `.github/workflows/${workflowName}`);
+            const workflow = workflows.find(w => w.path === '.github/workflows/' + workflowName);
             if (workflow) {
               await github.actions.reRunWorkflow({
                 owner: context.repo.owner,
