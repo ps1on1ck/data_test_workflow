@@ -6,7 +6,6 @@ on:
 
 jobs:
   merge_and_test:
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'staging'
     runs-on: ubuntu-latest
 
     steps:
