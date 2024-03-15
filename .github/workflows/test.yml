@@ -2,8 +2,6 @@ name: Merge Pull Request Workflow
 
 on:
   pull_request_review:
-    branches:
-      - staging
     types: [submitted]
 
 jobs:
