@@ -5,6 +5,10 @@ on:
     branches:
       - staging
 
+  push:
+    branches:
+      - develop
+
 jobs:
   check:
     runs-on: ubuntu-latest
