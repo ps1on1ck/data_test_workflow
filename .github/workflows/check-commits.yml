@@ -10,6 +10,7 @@ on:
 
 jobs:
   check:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/${{ github.head_ref }}'
     runs-on: ubuntu-latest
 
     steps:
