@@ -1,51 +1,51 @@
-name: Merge Pull Request Workflow
-
-on:
-  pull_request_review:
-    types: [submitted]
-
-jobs:
-  merge_and_test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Fetch develop branch
-        run: git fetch origin develop
-
-      - name: Check commits
-        run: |
-          # Check if all commits from feature branch are in develop
-          git fetch origin ${{ github.head_ref }}
-          commits_not_in_develop=$(git rev-list --count origin/${{ github.head_ref }} ^origin/develop)
-          if [ $commits_not_in_develop -eq 0 ]; then
-            echo "All commits from the feature branch are in develop."
-          else
-            echo "Not all commits from the feature branch are in develop."
-            exit 1
-          fi
-
-      # Example: Fail the workflow if tests fail
-      - name: Fail on test failure
-        if: failure()
-        run: exit 1
-
-      # Update status check
-      - name: Set status check
-        run: |
-          if [ ${{ job.status }} == "success" ]; then
-             echo "Tests passed!"
-          else
-            echo "Tests failed!"
-            exit 1
-          fi
-
-#      # Perform merge if tests pass
-#      - name: Merge to staging
-#        uses: pullreminders/merge-action@v2
-#        with:
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
-#          merge_method: squash
-#          base: staging
+#name: Merge Pull Request Workflow
+#
+#on:
+#  pull_request_review:
+#    types: [submitted]
+#
+#jobs:
+#  merge_and_test:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#
+#      - name: Fetch develop branch
+#        run: git fetch origin develop
+#
+#      - name: Check commits
+#        run: |
+#          # Check if all commits from feature branch are in develop
+#          git fetch origin ${{ github.head_ref }}
+#          commits_not_in_develop=$(git rev-list --count origin/${{ github.head_ref }} ^origin/develop)
+#          if [ $commits_not_in_develop -eq 0 ]; then
+#            echo "All commits from the feature branch are in develop."
+#          else
+#            echo "Not all commits from the feature branch are in develop."
+#            exit 1
+#          fi
+#
+#      # Example: Fail the workflow if tests fail
+#      - name: Fail on test failure
+#        if: failure()
+#        run: exit 1
+#
+#      # Update status check
+#      - name: Set status check
+#        run: |
+#          if [ ${{ job.status }} == "success" ]; then
+#             echo "Tests passed!"
+#          else
+#            echo "Tests failed!"
+#            exit 1
+#          fi
+#
+##      # Perform merge if tests pass
+##      - name: Merge to staging
+##        uses: pullreminders/merge-action@v2
+##        with:
+##          github_token: ${{ secrets.GITHUB_TOKEN }}
+##          merge_method: squash
+##          base: staging

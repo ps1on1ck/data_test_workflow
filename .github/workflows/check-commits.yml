@@ -1,29 +1,34 @@
-#name: Check Commits
-#
-#on:
-#  pull_request:
-#    branches:
-#      - staging
-#
-#jobs:
-#  check:
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v2
-#
-#      - name: Fetch develop branch
-#        run: git fetch origin develop
-#
-#      - name: Check commits
-#        run: |
-#          # Check if all commits from feature branch are in develop
-#          git fetch origin ${{ github.head_ref }}
-#          commits_not_in_develop=$(git rev-list --count origin/${{ github.head_ref }} ^origin/develop)
-#          if [ $commits_not_in_develop -eq 0 ]; then
-#            echo "All commits from the feature branch are in develop."
-#          else
-#            echo "Not all commits from the feature branch are in develop."
-#            exit 1
-#          fi
+name: Check Commits
+
+on:
+  pull_request:
+    branches:
+      - staging
+  push:
+    branches:
+      - develop
+      - 'test-*'
+
+jobs:
+  check:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Fetch develop branch
+        run: git fetch origin develop
+
+      - name: Check commits
+        run: |
+          # Check if all commits from feature branch are in develop
+          git fetch origin ${{ github.head_ref }}
+          commits_not_in_develop=$(git rev-list --count origin/${{ github.head_ref }} ^origin/develop)
+          if [ $commits_not_in_develop -eq 0 ]; then
+            echo "All commits from the feature branch are in develop."
+          else
+            echo "Not all commits from the feature branch are in develop."
+            exit 1
+          fi
