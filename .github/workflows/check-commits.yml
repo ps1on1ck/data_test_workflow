@@ -4,13 +4,9 @@ on:
   pull_request:
     branches:
       - staging
-
   push:
     branches:
       - develop
-    # Trigger only when changes occur in the develop branch
-    paths:
-      - 'develop/**'
 
 jobs:
   check:
