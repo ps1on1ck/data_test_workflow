@@ -7,11 +7,11 @@ on:
   push:
     branches:
       - develop
-      - 'test-*'
+      - 'feature/*'
 
 jobs:
   check:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/develop') || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
