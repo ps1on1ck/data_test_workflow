@@ -1,0 +1,78 @@
+name: Rerun Workflow1 on Develop Commit
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  rerun:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get Workflow ID
+        id: get_workflow_id
+        run: |
+          repo_owner=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f1)
+          repo_name=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f2)
+
+          workflow_id=$(curl -s -H "Authorization: Bearer ${{ secrets.MY_NEW_GITHUB_TOKEN }}" "https://api.github.com/repos/${repo_owner}/${repo_name}/actions/workflows" | jq -r '.workflows[] | select(.name == "Check Commits") | .id')
+          echo "::set-output name=workflow_id::$workflow_id"
+
+      - name: Extract Feature Branch Name
+        id: extract_branch
+        run: |
+          # Extract the feature branch name from the commit message
+          feature_branch=$(echo "${{ github.event.head_commit.message }}" | grep -oP "Merge branch (\S+)" | sed "s/Merge branch //")
+          
+          echo "::set-output name=feature_branch::$feature_branch"
+
+      - name: Rerun Workflow1 for Feature Branch
+        if: ${{ steps.extract_branch.outputs.feature_branch != '' }}
+        run: |
+          workflow_id=${{ steps.get_workflow_id.outputs.workflow_id }}
+          feature_branch=${{ steps.extract_branch.outputs.feature_branch }}
+          repo_owner=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f1)
+          repo_name=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f2)
+          token="${{ secrets.MY_NEW_GITHUB_TOKEN }}"
+          
+          # Get the last failed workflow run
+          last_failed_run=$(curl -s -H "Authorization: Bearer $token" "https://api.github.com/repos/${repo_owner}/${repo_name}/actions/workflows/${workflow_id}/runs?branch=develop&status=completed" | jq -r '.workflow_runs | map(select(.conclusion == "failure")) | first')
+          
+          if [ -n "$last_failed_run" ]; then
+            run_id=$(echo "$last_failed_run" | jq -r '.id')
+            # Rerun the workflow for the feature branch
+            curl -X POST -s -H "Authorization: Bearer $token" -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/${repo_owner}/${repo_name}/actions/runs/$run_id/rerun"
+          fi
+
+#      - name: Rerun Workflow1 for Feature Branch
+#        if: ${{ steps.extract_branch.outputs.feature_branch != '' }}
+#        uses: actions/github-script@v4
+#        with:
+#          github-token: ${{ secrets.MY_NEW_GITHUB_TOKEN }}
+#          script: |
+#            const { owner, repo, sha } = context;
+#            const workflow_id = "${{ steps.get_workflow_id.outputs.workflow_id }}";
+#            const feature_branch = "${{ steps.extract_branch.outputs.feature_branch }}";
+#
+#            try {
+#              const octokit = new Octokit({ auth: process.env.MY_NEW_GITHUB_TOKEN });
+#              const response = await octokit.rest.actions.listWorkflowRuns({
+#                owner,
+#                repo,
+#                workflow_id,
+#                branch: 'develop',
+#                status: 'completed'
+#              });
+#              const lastFailedRun = response.data.workflow_runs.find(run => run.conclusion === 'failure');
+#              if (lastFailedRun) {
+#                await octokit.rest.actions.reRunWorkflow({
+#                  owner,
+#                  repo,
+#                  run_id: lastFailedRun.id,
+#                  workflow_id
+#                });
+#              }
+#            } catch (error) {
+#              console.error(error);
+#            }

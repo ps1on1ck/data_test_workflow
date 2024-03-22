@@ -1,4 +1,4 @@
-name: Workflow 5
+name: Workflow 4
 
 on:
   push:
@@ -40,19 +40,14 @@ jobs:
               const workflowName = 'check-commits.yml'; // Adjust the workflow file name if necessary
               const workflow = workflows.find(w => w.path === `.github/workflows/${workflowName}`);
               if (workflow) {
-                console.log('workflow', workflow);
-                if (workflow.latest_run) {
                   await github.rest.actions.reRunWorkflow({
                     owner: '${{ github.repository_owner }}',
                     repo: '${{ github.event.repository.name }}',
-                    run_id: workflow.latest_run.id,
+                    run_id: workflow.id,
                     workflow_id: workflow.id,
                     ref: `refs/heads/${branchName}`
                   });
                   console.log(`Workflow ${workflowName} rerun triggered for branch ${branchName}`);
-                } else {
-                  console.log(`No previous runs found for workflow ${workflowName}`);
-                }
               } else {
                 console.log(`Workflow ${workflowName} not found.`);
               }
